@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌾 Crop Protection Advisor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="config.js"></script>
+  <style>
+    :root {
+      --green-dark: #1a3a2a;
+      --green-mid: #2d5a3d;
+      --green-light: #4a8c5c;
+      --green-pale: #e8f5ee;
+      --gold: #c9a84c;
+      --gold-light: #f0d080;
+      --cream: #faf7f0;
+      --text-dark: #1a2820;
+      --text-mid: #4a5e52;
+      --text-light: #8a9e92;
+      --white: #ffffff;
+      --shadow: 0 8px 40px rgba(26,58,42,0.12);
+      --shadow-lg: 0 20px 60px rgba(26,58,42,0.18);
+      --radius: 16px;
+      --radius-sm: 8px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--text-dark);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 20%, rgba(74,140,92,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(201,168,76,0.06) 0%, transparent 50%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234a8c5c' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+      animation: fadeDown 0.8s ease both;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--green-dark);
+      color: var(--gold);
+      padding: 10px 20px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+
+    .logo span { font-size: 18px; }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      color: var(--green-dark);
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    h1 em {
+      color: var(--green-light);
+      font-style: normal;
+    }
+
+    .subtitle {
+      color: var(--text-mid);
+      font-size: 16px;
+      font-weight: 300;
+      max-width: 500px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Input Card */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 36px;
+      margin-bottom: 24px;
+      animation: fadeUp 0.8s ease both;
+      animation-delay: 0.2s;
+      border: 1px solid rgba(74,140,92,0.1);
+    }
+
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--green-dark);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, rgba(74,140,92,0.3), transparent);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-mid);
+    }
+
+    input, select, textarea {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      padding: 12px 16px;
+      border: 1.5px solid rgba(74,140,92,0.2);
+      border-radius: var(--radius-sm);
+      background: var(--cream);
+      color: var(--text-dark);
+      transition: all 0.2s ease;
+      outline: none;
+      width: 100%;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--green-light);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(74,140,92,0.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+      line-height: 1.6;
+    }
+
+    /* API Config */
+    .api-config {
+      background: var(--green-dark);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .api-config label { color: rgba(255,255,255,0.6); }
+
+    .api-config input {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.15);
+      color: var(--white);
+    }
+
+    .api-config input:focus {
+      background: rgba(255,255,255,0.12);
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+    }
+
+    .api-config input::placeholder { color: rgba(255,255,255,0.3); }
+
+    /* Submit Button */
+    .btn {
+      width: 100%;
+      padding: 16px 32px;
+      background: linear-gradient(135deg, var(--green-mid), var(--green-dark));
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+      letter-spacing: 0.5px;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .btn:hover::before { opacity: 1; }
+    .btn:hover { color: var(--green-dark); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .btn:active { transform: translateY(0); }
+    .btn span { position: relative; z-index: 1; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* Loading */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 40px;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .loading.active { display: block; }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid rgba(74,140,92,0.2);
+      border-top-color: var(--green-light);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    .loading-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: 300px;
+      margin: 20px auto 0;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      border-radius: 100px;
+      background: var(--green-pale);
+      font-size: 13px;
+      color: var(--text-mid);
+      opacity: 0.4;
+      transition: all 0.4s ease;
+    }
+
+    .step.active {
+      opacity: 1;
+      background: var(--green-dark);
+      color: var(--white);
+      transform: scale(1.02);
+    }
+
+    .step.done { opacity: 0.7; background: var(--green-pale); color: var(--green-dark); }
+
+    /* Response */
+    .response-card {
+      display: none;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .response-card.active { display: block; }
+
+    .response-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .threat-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .threat-low { background: #e8f5ee; color: #2d7a4a; }
+    .threat-medium { background: #fff8e6; color: #a07a00; }
+    .threat-high { background: #fff0e6; color: #c05a00; }
+    .threat-critical { background: #ffe6e6; color: #c00000; }
+
+    .response-content {
+      font-size: 15px;
+      line-height: 1.8;
+      color: var(--text-dark);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .response-content strong { color: var(--green-dark); }
+
+    /* Notifications Banner */
+    .notifications-banner {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .notif-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .notif-email { background: #e8f0fe; color: #1a56c4; }
+    .notif-calendar { background: #fce8e6; color: #c4361a; }
+
+    /* Error */
+    .error-card {
+      display: none;
+      background: #fff0f0;
+      border: 1.5px solid #ffcccc;
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      color: #c00000;
+      font-size: 14px;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .error-card.active { display: block; }
+
+    /* History */
+    .history-section {
+      margin-top: 32px;
+      animation: fadeUp 0.8s ease both;
+      animation-delay: 0.4s;
+    }
+
+    .history-title {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-light);
+      margin-bottom: 12px;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--white);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(74,140,92,0.1);
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 13px;
+    }
+
+    .history-item:hover { border-color: var(--green-light); transform: translateX(4px); }
+
+    .history-crop { font-weight: 600; color: var(--green-dark); }
+    .history-time { color: var(--text-light); font-size: 12px; }
+
+    /* Animations */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(74,140,92,0.2), transparent);
+      margin: 24px 0;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      color: var(--text-light);
+      font-size: 12px;
+      margin-top: 48px;
+      letter-spacing: 0.5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <header>
+      <div class="logo"><span>🌾</span> AI Crop Advisor</div>
+      <h1>Protect Your <em>Harvest</em><br>with Real-Time Intelligence</h1>
+      <p class="subtitle">Get instant crop protection advice powered by live weather data and agricultural expertise.</p>
+    </header>
+
+    <!-- Input Form -->
+    <div class="card">
+      <div class="card-title">👨‍🌾 Farmer Details</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Your Name</label>
+          <input type="text" id="farmerName" placeholder="e.g. Intissar" />
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="farmerEmail" placeholder="your@email.com" />
+        </div>
+        <div class="form-group">
+          <label>City / Region</label>
+          <input type="text" id="farmerLocation" placeholder="e.g. Casablanca, Morocco" />
+        </div>
+        <div class="form-group">
+          <label>Crop Type</label>
+          <select id="cropType">
+            <option value="">Select a crop...</option>
+            <option value="greenhouse tomatoes">Greenhouse Tomatoes</option>
+            <option value="wheat">Wheat</option>
+            <option value="barley">Barley</option>
+            <option value="olives">Olives</option>
+            <option value="citrus">Citrus</option>
+            <option value="peppers">Peppers</option>
+            <option value="cucumbers">Cucumbers</option>
+            <option value="strawberries">Strawberries</option>
+            <option value="other">Other (specify below)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Growth Stage</label>
+          <select id="growthStage">
+            <option value="">Select stage...</option>
+            <option value="sowing / germination">Sowing / Germination</option>
+            <option value="early growth / seedling">Early Growth / Seedling</option>
+            <option value="vegetative growth">Vegetative Growth</option>
+            <option value="flowering">Flowering</option>
+            <option value="fruit set / development">Fruit Set / Development</option>
+            <option value="ripening / harvest">Ripening / Harvest</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Irrigation Type</label>
+          <select id="irrigationType">
+            <option value="drip irrigation">Drip Irrigation</option>
+            <option value="rainfed">Rainfed</option>
+            <option value="sprinkler">Sprinkler</option>
+            <option value="flood irrigation">Flood Irrigation</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Additional Notes (optional)</label>
+          <textarea id="additionalNotes" placeholder="Any specific concerns? Recent symptoms noticed? Previous treatments applied?"></textarea>
+        </div>
+      </div>
+
+      <button class="btn" onclick="submitToAgent()" id="submitBtn">
+        <span>🔍 Analyze & Protect My Crops</span>
+      </button>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p style="color: var(--text-mid); font-weight: 500;">Analyzing your crop situation...</p>
+      <div class="loading-steps">
+        <div class="step" id="step1">🌤️ Fetching live weather data</div>
+        <div class="step" id="step2">🌱 Searching crop knowledge base</div>
+        <div class="step" id="step3">📋 Building protection plan</div>
+        <div class="step" id="step4">📧 Sending notifications</div>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div class="error-card" id="errorCard">
+      ⚠️ <strong>Error:</strong> <span id="errorMsg"></span>
+    </div>
+
+    <!-- Response -->
+    <div class="card response-card" id="responseCard">
+      <div class="response-header">
+        <div class="card-title" style="margin-bottom:0">📋 Protection Report</div>
+        <span class="threat-badge threat-medium" id="threatBadge">⚠️ Analyzing...</span>
+      </div>
+      <div class="divider"></div>
+      <div class="response-content" id="responseContent"></div>
+      <div class="notifications-banner" id="notificationsBanner"></div>
+    </div>
+
+    <!-- History -->
+    <div class="history-section" id="historySection" style="display:none">
+      <div class="history-title">Recent Assessments</div>
+      <div id="historyList"></div>
+    </div>
+
+    <footer>🌾 AI Crop Protection Advisor — Powered by Multi-Agent AI</footer>
+  </div>
+
+  <script>
+    const SESSION_ID = 'session-' + Math.random().toString(36).substr(2, 9);
+    const history = [];
+
+    function buildPrompt() {
+      const name = document.getElementById('farmerName').value || 'Farmer';
+      const email = document.getElementById('farmerEmail').value;
+      const location = document.getElementById('farmerLocation').value;
+      const crop = document.getElementById('cropType').value;
+      const stage = document.getElementById('growthStage').value;
+      const irrigation = document.getElementById('irrigationType').value;
+      const notes = document.getElementById('additionalNotes').value;
+
+      let prompt = `Hi, I am ${name}, a farmer from ${location}. I grow ${crop} and my crops are currently at the ${stage} stage. I use ${irrigation}. My email is ${email}. Can you assess the current weather conditions and tell me if my crops are at risk and what I should do to protect them?`;
+
+      if (notes) prompt += ` Additional notes: ${notes}`;
+      prompt += ` Important: Send the email and create calendar reminders automatically without asking for confirmation. Do not ask me to confirm anything.`;
+      return prompt;
+    }
+
+    function validateForm() {
+      const required = ['farmerName', 'farmerEmail', 'farmerLocation', 'cropType', 'growthStage'];
+      for (const id of required) {
+        const val = document.getElementById(id).value.trim();
+        if (!val) {
+          document.getElementById(id).focus();
+          document.getElementById(id).style.borderColor = '#c00000';
+          setTimeout(() => document.getElementById(id).style.borderColor = '', 2000);
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function animateSteps() {
+      const steps = ['step1', 'step2', 'step3', 'step4'];
+      let i = 0;
+      const interval = setInterval(() => {
+        if (i > 0) {
+          document.getElementById(steps[i-1]).classList.remove('active');
+          document.getElementById(steps[i-1]).classList.add('done');
+        }
+        if (i < steps.length) {
+          document.getElementById(steps[i]).classList.add('active');
+          i++;
+        } else {
+          clearInterval(interval);
+        }
+      }, 3000);
+      return interval;
+    }
+
+    function detectThreatLevel(text) {
+      const lower = text.toLowerCase();
+      if (lower.includes('critical') || lower.includes('emergency') || lower.includes('immediate danger')) {
+        return { level: 'critical', label: '🚨 Critical Risk', cls: 'threat-critical' };
+      } else if (lower.includes('high risk') || lower.includes('urgent')) {
+        return { level: 'high', label: '⚠️ High Risk', cls: 'threat-high' };
+      } else if (lower.includes('medium') || lower.includes('moderate')) {
+        return { level: 'medium', label: '⚡ Medium Risk', cls: 'threat-medium' };
+      } else {
+        return { level: 'low', label: '✅ Low Risk', cls: 'threat-low' };
+      }
+    }
+
+    function detectNotifications(text) {
+      const lower = text.toLowerCase();
+      const pills = [];
+      if (lower.includes('email sent') || lower.includes('sent to') || lower.includes('gmail')) {
+        pills.push(`<div class="notif-pill notif-email">📧 Email Sent</div>`);
+      }
+      if (lower.includes('calendar') || lower.includes('reminder') || lower.includes('event created')) {
+        pills.push(`<div class="notif-pill notif-calendar">📅 Calendar Events Created</div>`);
+      }
+      return pills.join('');
+    }
+
+    function addToHistory(crop, location, threatLevel) {
+      const now = new Date().toLocaleTimeString();
+      history.unshift({ crop, location, threatLevel, time: now });
+      renderHistory();
+    }
+
+    function renderHistory() {
+      if (history.length === 0) return;
+      document.getElementById('historySection').style.display = 'block';
+      document.getElementById('historyList').innerHTML = history.slice(0, 5).map(h => `
+        <div class="history-item">
+          <span class="history-crop">🌱 ${h.crop} — ${h.location}</span>
+          <span class="history-time">${h.time}</span>
+        </div>
+      `).join('');
+    }
+
+    async function submitToAgent() {
+      if (!validateForm()) return;
+
+      // Check config.js is loaded
+      if (typeof CONFIG === 'undefined' || !CONFIG.apiUrl || !CONFIG.apiKey) {
+        document.getElementById('errorMsg').textContent = 'config.js is missing or incomplete. Please create config.js with your apiUrl and apiKey.';
+        document.getElementById('errorCard').classList.add('active');
+        return;
+      }
+      const apiUrl = CONFIG.apiUrl;
+      const apiKey = CONFIG.apiKey;
+      const prompt = buildPrompt();
+
+      // UI state
+      document.getElementById('submitBtn').disabled = true;
+      document.getElementById('loading').classList.add('active');
+      document.getElementById('responseCard').classList.remove('active');
+      document.getElementById('errorCard').classList.remove('active');
+      document.getElementById('step1').classList.remove('active', 'done');
+      document.getElementById('step2').classList.remove('active', 'done');
+      document.getElementById('step3').classList.remove('active', 'done');
+      document.getElementById('step4').classList.remove('active', 'done');
+
+      const stepInterval = animateSteps();
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey
+          },
+          body: JSON.stringify({
+            input: [
+              {
+                type: "text",
+                text: prompt
+              }
+            ],
+            session_id: SESSION_ID
+          })
+        });
+
+        clearInterval(stepInterval);
+
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        // Extract response text
+        let responseText = '';
+        if (data.output) responseText = data.output;
+        else if (data.result) responseText = data.result;
+        else if (data.message) responseText = data.message;
+        else if (data.content) responseText = data.content;
+        else responseText = JSON.stringify(data, null, 2);
+
+        // Show response
+        const threat = detectThreatLevel(responseText);
+        const badge = document.getElementById('threatBadge');
+        badge.textContent = threat.label;
+        badge.className = `threat-badge ${threat.cls}`;
+
+        document.getElementById('responseContent').textContent = responseText;
+        document.getElementById('notificationsBanner').innerHTML = detectNotifications(responseText);
+        document.getElementById('responseCard').classList.add('active');
+
+        // Add to history
+        addToHistory(
+          document.getElementById('cropType').value,
+          document.getElementById('farmerLocation').value,
+          threat.label
+        );
+
+      } catch (err) {
+        clearInterval(stepInterval);
+        document.getElementById('errorMsg').textContent = err.message;
+        document.getElementById('errorCard').classList.add('active');
+      } finally {
+        document.getElementById('loading').classList.remove('active');
+        document.getElementById('submitBtn').disabled = false;
+      }
+    }
+
+    // Enter key support
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && e.ctrlKey) submitToAgent();
+    });
+  </script>
+</body>
+</html>
