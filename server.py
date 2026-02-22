@@ -25,9 +25,9 @@ SCOPES = ["https://www.googleapis.com/auth/calendar"]
 app = Flask(__name__)
 CORS(app)
 
-# ─────────────────────────────────────────────
+
 # GOOGLE CALENDAR
-# ─────────────────────────────────────────────
+
 def get_calendar_service():
     creds = None
     if os.path.exists("token.json"):
@@ -99,9 +99,9 @@ def create_calendar_events(actions, location):
         return []
 
 
-# ─────────────────────────────────────────────
+
 # EMAIL
-# ─────────────────────────────────────────────
+
 def format_response_as_html(text):
     lines = text.split('\n')
     html = ""
@@ -239,9 +239,8 @@ def send_email(to_email, farmer_name, location, crop, response_text, calendar_ev
         print(f"❌ Email error: {e}")
 
 
-# ─────────────────────────────────────────────
+
 # HELPERS
-# ─────────────────────────────────────────────
 def extract_email(text):
     match = re.search(r'[\w.+-]+@[\w-]+\.[a-zA-Z]+', text)
     return match.group(0) if match else None
@@ -256,9 +255,8 @@ def extract_field(text, field):
     return match.group(1).strip() if match else "Unknown"
 
 
-# ─────────────────────────────────────────────
+
 # MAIN ROUTE
-# ─────────────────────────────────────────────
 @app.route('/invoke', methods=['POST'])
 def invoke():
     data = request.json
