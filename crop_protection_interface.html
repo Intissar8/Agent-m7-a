@@ -332,11 +332,68 @@
       font-size: 15px;
       line-height: 1.8;
       color: var(--text-dark);
-      white-space: pre-wrap;
       word-break: break-word;
     }
 
-    .response-content strong { color: var(--green-dark); }
+    .response-content .section-title {
+      color: var(--green-dark);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin: 20px 0 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(74,140,92,0.2);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .response-content .weather-bar {
+      background: linear-gradient(135deg, #e8f5ee, #f0f8f2);
+      border: 1px solid rgba(74,140,92,0.2);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      margin: 4px 0 16px;
+      font-size: 14px;
+      color: var(--text-mid);
+    }
+
+    .response-content .action-item {
+      padding: 8px 14px;
+      margin: 5px 0;
+      background: var(--cream);
+      border-radius: var(--radius-sm);
+      border-left: 3px solid var(--green-light);
+      font-size: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .response-content .action-item.urgent { border-left-color: #c00000; background: #fff8f8; }
+    .response-content .action-item.medium { border-left-color: #a07a00; background: #fffdf5; }
+    .response-content .action-item.low    { border-left-color: #2d7a4a; background: #f5fbf7; }
+
+    .tag { padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700; white-space:nowrap; }
+    .tag-urgent { background:#ffe6e6; color:#c00000; }
+    .tag-medium { background:#fff8e6; color:#a07a00; }
+    .tag-low    { background:#e8f5ee; color:#2d7a4a; }
+    .tag-high   { background:#fff0e6; color:#c05a00; }
+    .tag-critical { background:#ffe6e6; color:#c00000; }
+    .threat-block-low      { background:#e8f5ee; border-color:#2d7a4a; color:#2d7a4a; }
+    .threat-block-medium   { background:#fff8e6; border-color:#a07a00; color:#a07a00; }
+    .threat-block-high     { background:#fff0e6; border-color:#c05a00; color:#c05a00; }
+    .threat-block-critical { background:#ffe6e6; border-color:#c00000; color:#c00000; }
+
+    .notif-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(74,140,92,0.15);
+      flex-wrap: wrap;
+    }
 
     /* Notifications Banner */
     .notifications-banner {
@@ -547,7 +604,7 @@
       <div id="historyList"></div>
     </div>
 
-    <footer>🌾 AI Crop Protection Advisor — Powered by Multi-Agent AI</footer>
+    <footer>🌾 AI Crop Protection Advisor — Powered by Syntax GenAI Studio</footer>
   </div>
 
   <script>
@@ -584,22 +641,61 @@
       return true;
     }
 
-    function animateSteps() {
+    // Step controller — steps stay active until manually advanced
+    let stepController = null;
+
+    function initSteps() {
+      // Start step 1 immediately
+      activateStep(0);
+
+      // Step durations based on realistic agent timing (ms)
+      // Step 1: Weather fetch ~5s, Step 2: KB search ~10s, Step 3: Plan build ~8s
+      // Step 4 (notifications) triggered after response comes back
+      const durations = [5000, 10000, 8000];
+      let elapsed = 0;
+      const timers = [];
+
+      durations.forEach((delay, i) => {
+        elapsed += delay;
+        const t = setTimeout(() => {
+          completeStep(i);
+          if (i + 1 < 4) activateStep(i + 1);
+        }, elapsed);
+        timers.push(t);
+      });
+
+      return timers;
+    }
+
+    function activateStep(index) {
       const steps = ['step1', 'step2', 'step3', 'step4'];
-      let i = 0;
-      const interval = setInterval(() => {
-        if (i > 0) {
-          document.getElementById(steps[i-1]).classList.remove('active');
-          document.getElementById(steps[i-1]).classList.add('done');
-        }
-        if (i < steps.length) {
-          document.getElementById(steps[i]).classList.add('active');
-          i++;
-        } else {
-          clearInterval(interval);
-        }
-      }, 3000);
-      return interval;
+      const el = document.getElementById(steps[index]);
+      if (el) {
+        el.classList.remove('done');
+        el.classList.add('active');
+      }
+    }
+
+    function completeStep(index) {
+      const steps = ['step1', 'step2', 'step3', 'step4'];
+      const el = document.getElementById(steps[index]);
+      if (el) {
+        el.classList.remove('active');
+        el.classList.add('done');
+      }
+    }
+
+    function completeAllSteps() {
+      for (let i = 0; i < 4; i++) completeStep(i);
+    }
+
+    function clearStepTimers(timers) {
+      if (timers) timers.forEach(t => clearTimeout(t));
+    }
+
+    function animateSteps() {
+      // Legacy wrapper — not used directly anymore
+      return [];
     }
 
     function detectThreatLevel(text) {
@@ -616,15 +712,9 @@
     }
 
     function detectNotifications(text) {
-      const lower = text.toLowerCase();
-      const pills = [];
-      if (lower.includes('email sent') || lower.includes('sent to') || lower.includes('gmail')) {
-        pills.push(`<div class="notif-pill notif-email">📧 Email Sent</div>`);
-      }
-      if (lower.includes('calendar') || lower.includes('reminder') || lower.includes('event created')) {
-        pills.push(`<div class="notif-pill notif-calendar">📅 Calendar Events Created</div>`);
-      }
-      return pills.join('');
+      // Notifications are rendered inline by formatResponse via 📧 and 📅 lines
+      // This function is kept but returns empty to avoid duplicates
+      return '';
     }
 
     function addToHistory(crop, location, threatLevel) {
@@ -642,6 +732,75 @@
           <span class="history-time">${h.time}</span>
         </div>
       `).join('');
+    }
+
+
+    function formatResponse(text) {
+      const lines = text.split('\n');
+      let html = '';
+
+      for (let line of lines) {
+        line = line.trim();
+        if (!line || line === '---') continue;
+
+        // Section headers with emoji
+        if (/^(📍|🌡️|⚠️|🔴|✅|💧|📧|📅|💬)/.test(line)) {
+          const icon = line.match(/^(📍|🌡️|⚠️|🔴|✅|💧|📧|📅|💬)/)[0];
+          const rest = line.slice(icon.length).trim();
+
+          // Weather line
+          if (icon === '🌡️') {
+            html += `<div class="weather-bar">${icon} ${escHtml(rest)}</div>`;
+          }
+          // Notification lines
+          else if (icon === '📧' || icon === '📅') {
+            html += `<div class="notif-row"><div class="notif-pill ${icon === '📧' ? 'notif-email' : 'notif-calendar'}">${icon} ${escHtml(rest)}</div></div>`;
+          }
+          // Threat level
+          else if (icon === '⚠️') {
+            const level = rest.replace('THREAT LEVEL:', '').trim();
+            const cls = level.includes('CRITICAL') ? 'tag-critical' : level.includes('HIGH') ? 'tag-high' : level.includes('MEDIUM') ? 'tag-medium' : 'tag-low';
+            const emoji = level.includes('CRITICAL') ? '🚨' : level.includes('HIGH') ? '⚠️' : level.includes('MEDIUM') ? '⚡' : '✅';
+            html += `<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:8px;margin:12px 0 4px;background:var(--${cls.replace('tag-','')}-bg, #fff8e6);border:1.5px solid currentColor;" class="${cls}">
+              <span style="font-size:20px;">${emoji}</span>
+              <div>
+                <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:0.7;">Threat Level</div>
+                <div style="font-size:16px;font-weight:700;">${level}</div>
+              </div>
+            </div>`;
+          }
+          // WHY explanation
+          else if (icon === '💬') {
+            html += `<div style="background:#f0f8f2;border-left:3px solid var(--green-light);padding:8px 14px;border-radius:0 6px 6px 0;margin:4px 0 16px;font-size:13px;color:var(--text-mid);font-style:italic;">${escHtml(rest.replace('WHY:', '').trim())}</div>`;
+          }
+          // Section titles
+          else {
+            html += `<div class="section-title">${icon} ${escHtml(rest.replace(':', ''))}</div>`;
+          }
+        }
+        // Action items
+        else if (line.startsWith('- ')) {
+          const content = line.slice(2);
+          if (content.includes('[URGENT]')) {
+            html += `<div class="action-item urgent"><span class="tag tag-urgent">URGENT</span>${escHtml(content.replace('[URGENT]', '').trim())}</div>`;
+          } else if (content.includes('[MEDIUM]')) {
+            html += `<div class="action-item medium"><span class="tag tag-medium">MEDIUM</span>${escHtml(content.replace('[MEDIUM]', '').trim())}</div>`;
+          } else if (content.includes('[LOW]')) {
+            html += `<div class="action-item low"><span class="tag tag-low">LOW</span>${escHtml(content.replace('[LOW]', '').trim())}</div>`;
+          } else {
+            html += `<div class="action-item">${escHtml(content)}</div>`;
+          }
+        }
+        // Plain text
+        else {
+          html += `<p style="margin:4px 0;font-size:14px;color:var(--text-mid);">${escHtml(line)}</p>`;
+        }
+      }
+      return html;
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
     async function submitToAgent() {
@@ -662,12 +821,11 @@
       document.getElementById('loading').classList.add('active');
       document.getElementById('responseCard').classList.remove('active');
       document.getElementById('errorCard').classList.remove('active');
-      document.getElementById('step1').classList.remove('active', 'done');
-      document.getElementById('step2').classList.remove('active', 'done');
-      document.getElementById('step3').classList.remove('active', 'done');
-      document.getElementById('step4').classList.remove('active', 'done');
+      ['step1','step2','step3','step4'].forEach(id => {
+        document.getElementById(id).classList.remove('active', 'done');
+      });
 
-      const stepInterval = animateSteps();
+      const stepTimers = initSteps();
 
       try {
         const response = await fetch(apiUrl, {
@@ -687,13 +845,17 @@
           })
         });
 
-        clearInterval(stepInterval);
+        // Stop timers — response is back
+        clearStepTimers(stepTimers);
 
         if (!response.ok) {
           throw new Error(`API error: ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
+
+        // Mark step 4 (notifications) as active then complete
+        activateStep(3);
 
         // Extract response text
         let responseText = '';
@@ -703,13 +865,18 @@
         else if (data.content) responseText = data.content;
         else responseText = JSON.stringify(data, null, 2);
 
+        // Brief pause so user sees step 4 light up, then show results
+        await new Promise(r => setTimeout(r, 800));
+        completeAllSteps();
+        await new Promise(r => setTimeout(r, 300));
+
         // Show response
         const threat = detectThreatLevel(responseText);
         const badge = document.getElementById('threatBadge');
         badge.textContent = threat.label;
         badge.className = `threat-badge ${threat.cls}`;
 
-        document.getElementById('responseContent').textContent = responseText;
+        document.getElementById('responseContent').innerHTML = formatResponse(responseText);
         document.getElementById('notificationsBanner').innerHTML = detectNotifications(responseText);
         document.getElementById('responseCard').classList.add('active');
 
@@ -721,7 +888,8 @@
         );
 
       } catch (err) {
-        clearInterval(stepInterval);
+        clearStepTimers(stepTimers);
+        completeAllSteps();
         document.getElementById('errorMsg').textContent = err.message;
         document.getElementById('errorCard').classList.add('active');
       } finally {
