@@ -35,7 +35,6 @@
       overflow-x: hidden;
     }
 
-    /* Background texture */
     body::before {
       content: '';
       position: fixed;
@@ -56,7 +55,6 @@
       z-index: 1;
     }
 
-    /* Header */
     header {
       text-align: center;
       margin-bottom: 48px;
@@ -88,10 +86,7 @@
       margin-bottom: 12px;
     }
 
-    h1 em {
-      color: var(--green-light);
-      font-style: normal;
-    }
+    h1 em { color: var(--green-light); font-style: normal; }
 
     .subtitle {
       color: var(--text-mid);
@@ -102,7 +97,6 @@
       line-height: 1.6;
     }
 
-    /* Input Card */
     .card {
       background: var(--white);
       border-radius: var(--radius);
@@ -179,35 +173,10 @@
 
     textarea {
       resize: vertical;
-      min-height: 100px;
+      min-height: 80px;
       line-height: 1.6;
     }
 
-    /* API Config */
-    .api-config {
-      background: var(--green-dark);
-      border-radius: var(--radius-sm);
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-
-    .api-config label { color: rgba(255,255,255,0.6); }
-
-    .api-config input {
-      background: rgba(255,255,255,0.08);
-      border-color: rgba(255,255,255,0.15);
-      color: var(--white);
-    }
-
-    .api-config input:focus {
-      background: rgba(255,255,255,0.12);
-      border-color: var(--gold);
-      box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
-    }
-
-    .api-config input::placeholder { color: rgba(255,255,255,0.3); }
-
-    /* Submit Button */
     .btn {
       width: 100%;
       padding: 16px 32px;
@@ -244,7 +213,6 @@
     .btn span { position: relative; z-index: 1; }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-    /* Loading */
     .loading {
       display: none;
       text-align: center;
@@ -294,7 +262,6 @@
 
     .step.done { opacity: 0.7; background: var(--green-pale); color: var(--green-dark); }
 
-    /* Response */
     .response-card {
       display: none;
       animation: fadeUp 0.6s ease both;
@@ -323,9 +290,9 @@
       text-transform: uppercase;
     }
 
-    .threat-low { background: #e8f5ee; color: #2d7a4a; }
+    .threat-low    { background: #e8f5ee; color: #2d7a4a; }
     .threat-medium { background: #fff8e6; color: #a07a00; }
-    .threat-high { background: #fff0e6; color: #c05a00; }
+    .threat-high   { background: #fff0e6; color: #c05a00; }
     .threat-critical { background: #ffe6e6; color: #c00000; }
 
     .response-content {
@@ -376,15 +343,11 @@
     .response-content .action-item.low    { border-left-color: #2d7a4a; background: #f5fbf7; }
 
     .tag { padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700; white-space:nowrap; }
-    .tag-urgent { background:#ffe6e6; color:#c00000; }
-    .tag-medium { background:#fff8e6; color:#a07a00; }
-    .tag-low    { background:#e8f5ee; color:#2d7a4a; }
-    .tag-high   { background:#fff0e6; color:#c05a00; }
+    .tag-urgent   { background:#ffe6e6; color:#c00000; }
+    .tag-medium   { background:#fff8e6; color:#a07a00; }
+    .tag-low      { background:#e8f5ee; color:#2d7a4a; }
+    .tag-high     { background:#fff0e6; color:#c05a00; }
     .tag-critical { background:#ffe6e6; color:#c00000; }
-    .threat-block-low      { background:#e8f5ee; border-color:#2d7a4a; color:#2d7a4a; }
-    .threat-block-medium   { background:#fff8e6; border-color:#a07a00; color:#a07a00; }
-    .threat-block-high     { background:#fff0e6; border-color:#c05a00; color:#c05a00; }
-    .threat-block-critical { background:#ffe6e6; border-color:#c00000; color:#c00000; }
 
     .notif-row {
       display: flex;
@@ -395,7 +358,6 @@
       flex-wrap: wrap;
     }
 
-    /* Notifications Banner */
     .notifications-banner {
       display: flex;
       gap: 12px;
@@ -413,10 +375,9 @@
       font-weight: 500;
     }
 
-    .notif-email { background: #e8f0fe; color: #1a56c4; }
+    .notif-email    { background: #e8f0fe; color: #1a56c4; }
     .notif-calendar { background: #fce8e6; color: #c4361a; }
 
-    /* Error */
     .error-card {
       display: none;
       background: #fff0f0;
@@ -430,7 +391,6 @@
 
     .error-card.active { display: block; }
 
-    /* History */
     .history-section {
       margin-top: 32px;
       animation: fadeUp 0.8s ease both;
@@ -461,33 +421,27 @@
     }
 
     .history-item:hover { border-color: var(--green-light); transform: translateX(4px); }
-
     .history-crop { font-weight: 600; color: var(--green-dark); }
     .history-time { color: var(--text-light); font-size: 12px; }
 
-    /* Animations */
     @keyframes fadeDown {
       from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Divider */
     .divider {
       height: 1px;
       background: linear-gradient(to right, transparent, rgba(74,140,92,0.2), transparent);
       margin: 24px 0;
     }
 
-    /* Footer */
     footer {
       text-align: center;
       color: var(--text-light);
@@ -495,6 +449,17 @@
       margin-top: 48px;
       letter-spacing: 0.5px;
     }
+
+    /* Geo status indicator */
+    .geo-status {
+      font-size: 11px;
+      color: var(--text-light);
+      margin-top: 4px;
+      min-height: 16px;
+      transition: color 0.3s;
+    }
+    .geo-status.found  { color: #2d7a4a; }
+    .geo-status.failed { color: #a07a00; }
   </style>
 </head>
 <body>
@@ -511,18 +476,29 @@
     <div class="card">
       <div class="card-title">👨‍🌾 Farmer Details</div>
       <div class="form-grid">
+
+        <!-- Row 1: Name + Email -->
         <div class="form-group">
           <label>Your Name</label>
-          <input type="text" id="farmerName" placeholder="e.g. Intissar" />
+          <input type="text" id="farmerName" placeholder="e.g. Youssef" />
         </div>
         <div class="form-group">
           <label>Email Address</label>
           <input type="email" id="farmerEmail" placeholder="your@email.com" />
         </div>
+
+        <!-- Row 2: City + Farm Address -->
         <div class="form-group">
-          <label>City / Region</label>
-          <input type="text" id="farmerLocation" placeholder="e.g. Casablanca, Morocco" />
+          <label>City / Region <span style="color:#c00;font-size:11px;text-transform:none;letter-spacing:0;font-weight:400;">(for weather lookup)</span></label>
+          <input type="text" id="farmerCity" placeholder="e.g. Fès, Morocco" />
         </div>
+        <div class="form-group">
+          <label>Farm Address <span style="color:#8a9e92;font-size:11px;text-transform:none;letter-spacing:0;font-weight:400;">(optional)</span></label>
+          <input type="text" id="farmerLocation" placeholder="e.g. Ferme Belkadi, Route de Meknès" oninput="triggerGeoPreview()" />
+          <div class="geo-status" id="geoStatus"></div>
+        </div>
+
+        <!-- Row 3: Crop Type + Growth Stage -->
         <div class="form-group">
           <label>Crop Type</label>
           <select id="cropType">
@@ -550,6 +526,8 @@
             <option value="ripening / harvest">Ripening / Harvest</option>
           </select>
         </div>
+
+        <!-- Row 4: Irrigation + Notes short -->
         <div class="form-group">
           <label>Irrigation Type</label>
           <select id="irrigationType">
@@ -559,10 +537,17 @@
             <option value="flood irrigation">Flood Irrigation</option>
           </select>
         </div>
+        <div class="form-group">
+          <label>Quick Notes <span style="color:#8a9e92;font-size:11px;text-transform:none;letter-spacing:0;font-weight:400;">(optional)</span></label>
+          <input type="text" id="additionalNotesShort" placeholder="e.g. Yellowing leaves, recent rain..." />
+        </div>
+
+        <!-- Row 5: Full-width detailed notes -->
         <div class="form-group full">
-          <label>Additional Notes (optional)</label>
+          <label>Detailed Notes <span style="color:#8a9e92;font-size:11px;text-transform:none;letter-spacing:0;font-weight:400;">(optional)</span></label>
           <textarea id="additionalNotes" placeholder="Any specific concerns? Recent symptoms noticed? Previous treatments applied?"></textarea>
         </div>
+
       </div>
 
       <button class="btn" onclick="submitToAgent()" id="submitBtn">
@@ -604,31 +589,116 @@
       <div id="historyList"></div>
     </div>
 
-    <footer>🌾 AI Crop Protection Advisor — Powered by Syntax GenAI Studio</footer>
+    <footer>🌾 AI Crop Protection Advisor — Powered by Multi-Agent AI</footer>
   </div>
 
   <script>
     const SESSION_ID = 'session-' + Math.random().toString(36).substr(2, 9);
     const history = [];
+    let cachedGeo = null;
+    let geoDebounceTimer = null;
 
-    function buildPrompt() {
-      const name = document.getElementById('farmerName').value || 'Farmer';
-      const email = document.getElementById('farmerEmail').value;
-      const location = document.getElementById('farmerLocation').value;
-      const crop = document.getElementById('cropType').value;
-      const stage = document.getElementById('growthStage').value;
+    // ─── Geocoding ────────────────────────────────────────────────────────
+    async function geocodeFarm(address, city) {
+      try {
+        const query = encodeURIComponent(address || city);
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1&addressdetails=1`,
+          { headers: { 'Accept-Language': 'en', 'User-Agent': 'CropAdvisorApp/1.0' } }
+        );
+        const data = await res.json();
+        if (!data || data.length === 0) return null;
+        const r = data[0];
+        const lat = parseFloat(r.lat).toFixed(4);
+        const lon = parseFloat(r.lon).toFixed(4);
+        const addr = r.address || {};
+        const parts = [];
+        if (addr.village || addr.suburb || addr.neighbourhood)
+          parts.push(addr.village || addr.suburb || addr.neighbourhood);
+        if (addr.county || addr.state_district)
+          parts.push(addr.county || addr.state_district);
+        if (addr.state) parts.push(addr.state);
+        let elevation = null;
+        try {
+          const elRes = await fetch(`https://api.open-elevation.com/api/v1/lookup?locations=${lat},${lon}`);
+          const elData = await elRes.json();
+          elevation = elData?.results?.[0]?.elevation ?? null;
+        } catch(e) {}
+        return { lat, lon, context: parts.join(', '), elevation, displayName: r.display_name };
+      } catch(e) {
+        console.warn('Geocoding failed:', e);
+        return null;
+      }
+    }
+
+    // Live geo preview when user types farm address
+    function triggerGeoPreview() {
+      clearTimeout(geoDebounceTimer);
+      cachedGeo = null;
+      const status = document.getElementById('geoStatus');
+      const addr = document.getElementById('farmerLocation').value.trim();
+      if (!addr) { status.textContent = ''; status.className = 'geo-status'; return; }
+      status.textContent = '📡 Looking up location...';
+      status.className = 'geo-status';
+      geoDebounceTimer = setTimeout(async () => {
+        const city = document.getElementById('farmerCity').value.trim();
+        const geo = await geocodeFarm(addr, city);
+        if (geo) {
+          cachedGeo = geo;
+          const elev = geo.elevation !== null ? ` · ${geo.elevation}m elevation` : '';
+          status.textContent = `✅ Found: ${geo.context || geo.displayName.split(',').slice(0,2).join(',')}${elev}`;
+          status.className = 'geo-status found';
+        } else {
+          status.textContent = '⚠️ Address not found — city will be used for analysis';
+          status.className = 'geo-status failed';
+        }
+      }, 900);
+    }
+
+    // ─── Prompt builder ───────────────────────────────────────────────────
+    async function buildPrompt() {
+      const name       = document.getElementById('farmerName').value || 'Farmer';
+      const email      = document.getElementById('farmerEmail').value;
+      const city       = document.getElementById('farmerCity').value;
+      const farmAddr   = document.getElementById('farmerLocation').value;
+      const location   = farmAddr ? `${farmAddr} (${city})` : city;
+      const crop       = document.getElementById('cropType').value;
+      const stage      = document.getElementById('growthStage').value;
       const irrigation = document.getElementById('irrigationType').value;
-      const notes = document.getElementById('additionalNotes').value;
+      const notesShort = document.getElementById('additionalNotesShort').value;
+      const notesLong  = document.getElementById('additionalNotes').value;
+      const notes      = [notesShort, notesLong].filter(Boolean).join('. ');
 
-      let prompt = `Hi, I am ${name}, a farmer from ${location}. I grow ${crop} and my crops are currently at the ${stage} stage. I use ${irrigation}. My email is ${email}. Can you assess the current weather conditions and tell me if my crops are at risk and what I should do to protect them?`;
+      // Use cached geo if available, otherwise fetch now
+      let geo = cachedGeo;
+      if (!geo && farmAddr) {
+        geo = await geocodeFarm(farmAddr, city);
+      } else if (!geo) {
+        geo = await geocodeFarm(city, city);
+      }
+
+      let geoContext = '';
+      if (geo) {
+        geoContext += `\n\n🌍 FARM GEOGRAPHIC CONTEXT (use this to refine your weather interpretation):`;
+        geoContext += `\n- Coordinates: ${geo.lat}°N, ${geo.lon}°E`;
+        if (geo.elevation !== null)
+          geoContext += `\n- Elevation: ${geo.elevation}m above sea level`;
+        if (geo.context)
+          geoContext += `\n- Area: ${geo.context}`;
+        geoContext += `\n- Full resolved address: ${geo.displayName}`;
+        geoContext += `\nNote: Factor in elevation and microclimate when assessing frost risk, humidity, temperature ranges, and disease pressure. Higher elevation = cooler nights, more mist/fog, different disease dynamics.`;
+      }
+
+      let prompt = `Hi, I am ${name}, a farmer from ${city}. My farm is located at: ${location}.${geoContext}\n\nI grow ${crop} and my crops are currently at the ${stage} stage. I use ${irrigation}. My email is ${email}. Use "${city}" for the weather lookup. Use "${location}" as the farm address in the email and calendar events. Can you assess the current weather conditions and tell me if my crops are at risk and what I should do to protect them?`;
 
       if (notes) prompt += ` Additional notes: ${notes}`;
       prompt += ` Important: Send the email and create calendar reminders automatically without asking for confirmation. Do not ask me to confirm anything.`;
       return prompt;
     }
 
+    // ─── Validation ───────────────────────────────────────────────────────
     function validateForm() {
-      const required = ['farmerName', 'farmerEmail', 'farmerLocation', 'cropType', 'growthStage'];
+      const required = ['farmerName', 'farmerEmail', 'farmerCity', 'cropType', 'growthStage'];
       for (const id of required) {
         const val = document.getElementById(id).value.trim();
         if (!val) {
@@ -641,20 +711,12 @@
       return true;
     }
 
-    // Step controller — steps stay active until manually advanced
-    let stepController = null;
-
+    // ─── Step controller ──────────────────────────────────────────────────
     function initSteps() {
-      // Start step 1 immediately
       activateStep(0);
-
-      // Step durations based on realistic agent timing (ms)
-      // Step 1: Weather fetch ~5s, Step 2: KB search ~10s, Step 3: Plan build ~8s
-      // Step 4 (notifications) triggered after response comes back
       const durations = [5000, 10000, 8000];
       let elapsed = 0;
       const timers = [];
-
       durations.forEach((delay, i) => {
         elapsed += delay;
         const t = setTimeout(() => {
@@ -663,26 +725,19 @@
         }, elapsed);
         timers.push(t);
       });
-
       return timers;
     }
 
     function activateStep(index) {
-      const steps = ['step1', 'step2', 'step3', 'step4'];
+      const steps = ['step1','step2','step3','step4'];
       const el = document.getElementById(steps[index]);
-      if (el) {
-        el.classList.remove('done');
-        el.classList.add('active');
-      }
+      if (el) { el.classList.remove('done'); el.classList.add('active'); }
     }
 
     function completeStep(index) {
-      const steps = ['step1', 'step2', 'step3', 'step4'];
+      const steps = ['step1','step2','step3','step4'];
       const el = document.getElementById(steps[index]);
-      if (el) {
-        el.classList.remove('active');
-        el.classList.add('done');
-      }
+      if (el) { el.classList.remove('active'); el.classList.add('done'); }
     }
 
     function completeAllSteps() {
@@ -693,14 +748,10 @@
       if (timers) timers.forEach(t => clearTimeout(t));
     }
 
-    function animateSteps() {
-      // Legacy wrapper — not used directly anymore
-      return [];
-    }
-
+    // ─── Threat detection ─────────────────────────────────────────────────
     function detectThreatLevel(text) {
       const lower = text.toLowerCase();
-      if (lower.includes('critical') || lower.includes('emergency') || lower.includes('immediate danger')) {
+      if (lower.includes('critical') || lower.includes('emergency')) {
         return { level: 'critical', label: '🚨 Critical Risk', cls: 'threat-critical' };
       } else if (lower.includes('high risk') || lower.includes('urgent')) {
         return { level: 'high', label: '⚠️ High Risk', cls: 'threat-high' };
@@ -711,12 +762,9 @@
       }
     }
 
-    function detectNotifications(text) {
-      // Notifications are rendered inline by formatResponse via 📧 and 📅 lines
-      // This function is kept but returns empty to avoid duplicates
-      return '';
-    }
+    function detectNotifications(text) { return ''; }
 
+    // ─── History ──────────────────────────────────────────────────────────
     function addToHistory(crop, location, threatLevel) {
       const now = new Date().toLocaleTimeString();
       history.unshift({ crop, location, threatLevel, time: now });
@@ -734,65 +782,48 @@
       `).join('');
     }
 
-
+    // ─── Response formatter ───────────────────────────────────────────────
     function formatResponse(text) {
       const lines = text.split('\n');
       let html = '';
-
       for (let line of lines) {
         line = line.trim();
         if (!line || line === '---') continue;
-
-        // Section headers with emoji
         if (/^(📍|🌡️|⚠️|🔴|✅|💧|📧|📅|💬)/.test(line)) {
           const icon = line.match(/^(📍|🌡️|⚠️|🔴|✅|💧|📧|📅|💬)/)[0];
           const rest = line.slice(icon.length).trim();
-
-          // Weather line
           if (icon === '🌡️') {
             html += `<div class="weather-bar">${icon} ${escHtml(rest)}</div>`;
-          }
-          // Notification lines
-          else if (icon === '📧' || icon === '📅') {
+          } else if (icon === '📧' || icon === '📅') {
             html += `<div class="notif-row"><div class="notif-pill ${icon === '📧' ? 'notif-email' : 'notif-calendar'}">${icon} ${escHtml(rest)}</div></div>`;
-          }
-          // Threat level
-          else if (icon === '⚠️') {
+          } else if (icon === '⚠️') {
             const level = rest.replace('THREAT LEVEL:', '').trim();
-            const cls = level.includes('CRITICAL') ? 'tag-critical' : level.includes('HIGH') ? 'tag-high' : level.includes('MEDIUM') ? 'tag-medium' : 'tag-low';
+            const cls   = level.includes('CRITICAL') ? 'tag-critical' : level.includes('HIGH') ? 'tag-high' : level.includes('MEDIUM') ? 'tag-medium' : 'tag-low';
             const emoji = level.includes('CRITICAL') ? '🚨' : level.includes('HIGH') ? '⚠️' : level.includes('MEDIUM') ? '⚡' : '✅';
-            html += `<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:8px;margin:12px 0 4px;background:var(--${cls.replace('tag-','')}-bg, #fff8e6);border:1.5px solid currentColor;" class="${cls}">
+            html += `<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:8px;margin:12px 0 4px;" class="${cls}">
               <span style="font-size:20px;">${emoji}</span>
               <div>
                 <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:0.7;">Threat Level</div>
-                <div style="font-size:16px;font-weight:700;">${level}</div>
+                <div style="font-size:16px;font-weight:700;">${escHtml(level)}</div>
               </div>
             </div>`;
+          } else if (icon === '💬') {
+            html += `<div style="background:#f0f8f2;border-left:3px solid var(--green-light);padding:8px 14px;border-radius:0 6px 6px 0;margin:4px 0 16px;font-size:13px;color:var(--text-mid);font-style:italic;">${escHtml(rest.replace('WHY:','').trim())}</div>`;
+          } else {
+            html += `<div class="section-title">${icon} ${escHtml(rest.replace(':',''))}</div>`;
           }
-          // WHY explanation
-          else if (icon === '💬') {
-            html += `<div style="background:#f0f8f2;border-left:3px solid var(--green-light);padding:8px 14px;border-radius:0 6px 6px 0;margin:4px 0 16px;font-size:13px;color:var(--text-mid);font-style:italic;">${escHtml(rest.replace('WHY:', '').trim())}</div>`;
-          }
-          // Section titles
-          else {
-            html += `<div class="section-title">${icon} ${escHtml(rest.replace(':', ''))}</div>`;
-          }
-        }
-        // Action items
-        else if (line.startsWith('- ')) {
+        } else if (line.startsWith('- ')) {
           const content = line.slice(2);
           if (content.includes('[URGENT]')) {
-            html += `<div class="action-item urgent"><span class="tag tag-urgent">URGENT</span>${escHtml(content.replace('[URGENT]', '').trim())}</div>`;
+            html += `<div class="action-item urgent"><span class="tag tag-urgent">URGENT</span>${escHtml(content.replace('[URGENT]','').trim())}</div>`;
           } else if (content.includes('[MEDIUM]')) {
-            html += `<div class="action-item medium"><span class="tag tag-medium">MEDIUM</span>${escHtml(content.replace('[MEDIUM]', '').trim())}</div>`;
+            html += `<div class="action-item medium"><span class="tag tag-medium">MEDIUM</span>${escHtml(content.replace('[MEDIUM]','').trim())}</div>`;
           } else if (content.includes('[LOW]')) {
-            html += `<div class="action-item low"><span class="tag tag-low">LOW</span>${escHtml(content.replace('[LOW]', '').trim())}</div>`;
+            html += `<div class="action-item low"><span class="tag tag-low">LOW</span>${escHtml(content.replace('[LOW]','').trim())}</div>`;
           } else {
             html += `<div class="action-item">${escHtml(content)}</div>`;
           }
-        }
-        // Plain text
-        else {
+        } else {
           html += `<p style="margin:4px 0;font-size:14px;color:var(--text-mid);">${escHtml(line)}</p>`;
         }
       }
@@ -803,26 +834,28 @@
       return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
+    // ─── Submit ───────────────────────────────────────────────────────────
     async function submitToAgent() {
       if (!validateForm()) return;
 
-      // Check config.js is loaded
       if (typeof CONFIG === 'undefined' || !CONFIG.apiUrl || !CONFIG.apiKey) {
-        document.getElementById('errorMsg').textContent = 'config.js is missing or incomplete. Please create config.js with your apiUrl and apiKey.';
+        document.getElementById('errorMsg').textContent = 'config.js is missing or incomplete.';
         document.getElementById('errorCard').classList.add('active');
         return;
       }
+
       const apiUrl = CONFIG.apiUrl;
       const apiKey = CONFIG.apiKey;
-      const prompt = buildPrompt();
 
-      // UI state
+      // Build prompt (includes geocoding)
+      const prompt = await buildPrompt();
+
       document.getElementById('submitBtn').disabled = true;
       document.getElementById('loading').classList.add('active');
       document.getElementById('responseCard').classList.remove('active');
       document.getElementById('errorCard').classList.remove('active');
       ['step1','step2','step3','step4'].forEach(id => {
-        document.getElementById(id).classList.remove('active', 'done');
+        document.getElementById(id).classList.remove('active','done');
       });
 
       const stepTimers = initSteps();
@@ -835,17 +868,11 @@
             'x-api-key': apiKey
           },
           body: JSON.stringify({
-            input: [
-              {
-                type: "text",
-                text: prompt
-              }
-            ],
+            input: [{ type: "text", text: prompt }],
             session_id: SESSION_ID
           })
         });
 
-        // Stop timers — response is back
         clearStepTimers(stepTimers);
 
         if (!response.ok) {
@@ -853,11 +880,8 @@
         }
 
         const data = await response.json();
-
-        // Mark step 4 (notifications) as active then complete
         activateStep(3);
 
-        // Extract response text
         let responseText = '';
         if (data.output) responseText = data.output;
         else if (data.result) responseText = data.result;
@@ -865,12 +889,10 @@
         else if (data.content) responseText = data.content;
         else responseText = JSON.stringify(data, null, 2);
 
-        // Brief pause so user sees step 4 light up, then show results
         await new Promise(r => setTimeout(r, 800));
         completeAllSteps();
         await new Promise(r => setTimeout(r, 300));
 
-        // Show response
         const threat = detectThreatLevel(responseText);
         const badge = document.getElementById('threatBadge');
         badge.textContent = threat.label;
@@ -880,10 +902,9 @@
         document.getElementById('notificationsBanner').innerHTML = detectNotifications(responseText);
         document.getElementById('responseCard').classList.add('active');
 
-        // Add to history
         addToHistory(
           document.getElementById('cropType').value,
-          document.getElementById('farmerLocation').value,
+          document.getElementById('farmerCity').value,
           threat.label
         );
 
@@ -898,7 +919,6 @@
       }
     }
 
-    // Enter key support
     document.addEventListener('keydown', e => {
       if (e.key === 'Enter' && e.ctrlKey) submitToAgent();
     });

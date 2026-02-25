@@ -64,58 +64,112 @@ def extract_actions(response_text):
 def smart_schedule(action_text, urgency, now, used_slots):
     text = action_text.lower()
     recurrence = None
+    day_offset = None
+    hour = None
 
-    if any(w in text for w in ["morning", "early", "sunrise", "first light", "dawn"]):
-        hour = 7
-    elif any(w in text for w in ["evening", "sunset", "dusk", "night"]):
-        hour = 18
-    elif any(w in text for w in ["noon", "midday", "afternoon"]):
-        hour = 13
-    else:
-        hour = 8
+    # "in X hours" / "within X hours"
+    m = re.search(r'(?:within|in|after)\s+(\d+)\s*h(?:our)?', text)
+    if m:
+        h = int(m.group(1))
+        candidate = now + timedelta(hours=h)
+        day_offset = (candidate.date() - now.date()).days
+        hour = candidate.hour
 
-    if any(w in text for w in ["immediately", "now", "tonight", "today", "asap", "right away"]):
-        day_offset = 0
-        hour = max(hour, datetime.utcnow().hour + 1)
-    elif any(w in text for w in ["tomorrow", "next morning", "first thing"]):
-        day_offset = 1
-    elif any(w in text for w in ["2 day", "48 hour", "within 2"]):
-        day_offset = 2
-    elif any(w in text for w in ["3 day", "72 hour", "within 3"]):
-        day_offset = 3
-    elif any(w in text for w in ["week", "7 day", "within 7"]):
-        day_offset = 7
-    elif urgency == "URGENT":
-        day_offset = 0
-    elif urgency == "MEDIUM":
-        day_offset = 2
-    else:
-        day_offset = 5
+    # "in X days" / "within X days"
+    if day_offset is None:
+        m = re.search(r'(?:within|in|after)\s+(\d+)\s*day', text)
+        if m:
+            day_offset = int(m.group(1))
 
-    offset = 0
-    while (day_offset, hour + offset) in used_slots:
-        offset += 1
-    used_slots.add((day_offset, hour + offset))
-    safe_hour = min(hour + offset, 22)
-    start = now.replace(hour=safe_hour, minute=0, second=0, microsecond=0) + timedelta(days=day_offset)
+    # Named day offsets
+    if day_offset is None:
+        if any(w in text for w in ["immediately", "asap", "right away", "straight away", "urgently", "now", "today"]):
+            day_offset = 0
+        elif any(w in text for w in ["tomorrow", "next morning", "first thing"]):
+            day_offset = 1
+        elif any(w in text for w in ["48 hour", "48h", "two day"]):
+            day_offset = 2
+        elif any(w in text for w in ["72 hour", "72h", "three day"]):
+            day_offset = 3
+        elif any(w in text for w in ["next week", "7 day", "one week"]):
+            day_offset = 7
+        elif any(w in text for w in ["10 day", "ten day"]):
+            day_offset = 10
+        elif any(w in text for w in ["fortnight", "14 day", "two week"]):
+            day_offset = 14
 
-    if any(w in text for w in ["scout", "inspect", "check", "monitor", "survey"]):
+    # Urgency fallback
+    if day_offset is None:
+        if urgency == "URGENT":
+            day_offset = 0
+        elif urgency == "MEDIUM":
+            day_offset = 2
+        else:
+            day_offset = 5
+
+    # Preferred time of day
+    if hour is None:
+        if any(w in text for w in ["morning", "early", "sunrise", "first light", "dawn"]):
+            hour = 7
+        elif any(w in text for w in ["evening", "dusk", "night", "sunset"]):
+            hour = 18
+        elif any(w in text for w in ["afternoon", "noon", "midday"]):
+            hour = 13
+        elif urgency == "URGENT":
+            hour = 9
+        elif urgency == "MEDIUM":
+            hour = 10
+        else:
+            hour = 11
+
+    # Never schedule before submission time
+    candidate = now.replace(minute=0, second=0, microsecond=0)
+    candidate = candidate.replace(hour=min(hour, 22)) + timedelta(days=day_offset)
+    earliest = now + timedelta(minutes=30)
+    if candidate < earliest:
+        candidate = (earliest + timedelta(hours=1)).replace(minute=0, second=0, microsecond=0)
+
+    day_offset = (candidate.date() - now.date()).days
+    hour = candidate.hour
+
+    # Avoid slot collisions
+    slot_hour = hour
+    bump = 0
+    while (day_offset, slot_hour) in used_slots:
+        slot_hour += 1
+        if slot_hour > 21:
+            slot_hour = 9
+            day_offset += 1
+        bump += 1
+        if bump > 48:
+            break
+    used_slots.add((day_offset, slot_hour))
+
+    start = now.replace(hour=slot_hour, minute=0, second=0, microsecond=0) + timedelta(days=day_offset)
+    if start < now:
+        start = (now + timedelta(hours=1)).replace(minute=0, second=0, microsecond=0)
+
+    # Duration by task type
+    if any(w in text for w in ["scout", "inspect", "check", "monitor", "survey", "assess", "evaluate"]):
         duration = 1
-    elif any(w in text for w in ["spray", "apply", "treat", "fungicide", "pesticide"]):
+    elif any(w in text for w in ["spray", "apply", "treat", "fungicide", "pesticide", "herbicide"]):
         duration = 2
-    elif any(w in text for w in ["drain", "pump", "irrigat", "water"]):
+    elif any(w in text for w in ["drain", "pump", "clear drain", "remove water", "irrigat"]):
         duration = 2
-    elif any(w in text for w in ["harvest", "collect", "pick"]):
+    elif any(w in text for w in ["harvest", "collect", "pick", "thresh"]):
         duration = 4
     else:
         duration = 1
 
-    if any(w in text for w in ["daily", "every day", "each day"]):
+    # Recurrence
+    if any(w in text for w in ["daily", "every day", "each day", "every morning"]):
         recurrence = ["RRULE:FREQ=DAILY;COUNT=21"]
-    elif any(w in text for w in ["weekly", "every week", "each week"]):
+    elif any(w in text for w in ["every week", "each week", "weekly"]):
         recurrence = ["RRULE:FREQ=WEEKLY;COUNT=4"]
-    elif any(w in text for w in ["twice", "every 2 day", "every other"]):
+    elif any(w in text for w in ["every 2 day", "every other day", "twice a week", "every 48"]):
         recurrence = ["RRULE:FREQ=DAILY;INTERVAL=2;COUNT=14"]
+    elif any(w in text for w in ["every 3 day", "every 72"]):
+        recurrence = ["RRULE:FREQ=DAILY;INTERVAL=3;COUNT=10"]
 
     return start, duration, recurrence
 
@@ -258,7 +312,7 @@ def format_response_as_html(text):
             irrigation = line.replace("💧","").replace("IRRIGATION:","").strip()
             break
 
-    # ── Threats HTML ──────────────────────────────────────────────────────
+    # Threats HTML
     level_map = {
         "CRITICAL": ("background:#ffe6e6;color:#c00000;", "#c00000"),
         "HIGH":     ("background:#fff0e6;color:#c05a00;", "#c05a00"),
@@ -291,7 +345,7 @@ def format_response_as_html(text):
       </td>
     </tr>"""
 
-    # ── Actions HTML ──────────────────────────────────────────────────────
+    # Actions HTML
     action_map = {
         "URGENT": ("background:#ffe6e6;color:#c00000;", "#c00000"),
         "MEDIUM": ("background:#fff8e6;color:#a07a00;", "#a07a00"),
@@ -328,7 +382,6 @@ def send_email(to_email, farmer_name, location, crop, response_text, calendar_ev
         (weather, threat_level, threat_color, threat_bg, threat_emoji,
          threat_why, threats_html, actions_html, irrigation) = format_response_as_html(response_text)
 
-        # Calendar section
         cal_rows = ""
         if calendar_events:
             for e in calendar_events:
@@ -356,27 +409,18 @@ def send_email(to_email, farmer_name, location, crop, response_text, calendar_ev
 <html>
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f0ede6;font-family:Arial,Helvetica,sans-serif;">
-
 <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f0ede6">
 <tr><td align="center" style="padding:30px 12px;">
-
-  <!-- Outer card -->
   <table width="600" cellpadding="0" cellspacing="0" border="0"
-         style="max-width:600px;width:100%;background:#ffffff;
-                border-radius:16px;overflow:hidden;
-                box-shadow:0 8px 40px rgba(0,0,0,0.12);">
-
+         style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.12);">
     <!-- HEADER -->
     <tr>
       <td bgcolor="#1a3a2a" style="padding:28px 24px;text-align:center;">
         <div style="font-size:36px;">🌾</div>
-        <h1 style="color:#c9a84c;margin:8px 0 4px;font-size:22px;
-                   letter-spacing:1px;font-family:Arial,sans-serif;">Crop Protection Alert</h1>
-        <p style="color:rgba(255,255,255,0.45);margin:0;font-size:11px;
-                  letter-spacing:2px;text-transform:uppercase;">AI Crop Protection Advisor</p>
+        <h1 style="color:#c9a84c;margin:8px 0 4px;font-size:22px;letter-spacing:1px;font-family:Arial,sans-serif;">Crop Protection Alert</h1>
+        <p style="color:rgba(255,255,255,0.45);margin:0;font-size:11px;letter-spacing:2px;text-transform:uppercase;">AI Crop Protection Advisor</p>
       </td>
     </tr>
-
     <!-- THREAT BLOCK -->
     <tr>
       <td bgcolor="{threat_bg}" style="padding:16px 24px;border-bottom:3px solid {threat_color};">
@@ -384,8 +428,7 @@ def send_email(to_email, farmer_name, location, crop, response_text, calendar_ev
           <tr>
             <td width="50" style="font-size:30px;text-align:center;vertical-align:middle;">{threat_emoji}</td>
             <td style="padding-left:12px;vertical-align:middle;">
-              <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;
-                          text-transform:uppercase;color:{threat_color};">Threat Level</div>
+              <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:{threat_color};">Threat Level</div>
               <div style="font-size:19px;font-weight:700;color:{threat_color};margin:3px 0;">{threat_level} RISK</div>
               <div style="font-size:12px;color:#4a5e52;font-style:italic;">{threat_why}</div>
             </td>
@@ -393,69 +436,52 @@ def send_email(to_email, farmer_name, location, crop, response_text, calendar_ev
         </table>
       </td>
     </tr>
-
     <!-- BODY -->
     <tr>
       <td style="padding:24px;background:#ffffff;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
-
           <!-- Farmer + Weather -->
           <tr>
             <td width="49%" bgcolor="#f9f6f0" style="padding:12px 14px;border-radius:8px;vertical-align:top;">
-              <div style="font-size:10px;font-weight:700;color:#4a5e52;text-transform:uppercase;
-                          letter-spacing:1px;margin-bottom:4px;">👨‍🌾 Farmer</div>
+              <div style="font-size:10px;font-weight:700;color:#4a5e52;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">👨‍🌾 Farmer</div>
               <div style="font-size:15px;font-weight:700;color:#1a2820;">{farmer_name}</div>
               <div style="font-size:12px;color:#4a5e52;margin-top:3px;">📍 {location} | 🌱 {crop}</div>
             </td>
             <td width="2%">&nbsp;</td>
             <td width="49%" bgcolor="#e8f5ee" style="padding:12px 14px;border-radius:8px;vertical-align:top;">
-              <div style="font-size:10px;font-weight:700;color:#4a5e52;text-transform:uppercase;
-                          letter-spacing:1px;margin-bottom:4px;">🌡️ Current Weather</div>
+              <div style="font-size:10px;font-weight:700;color:#4a5e52;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">🌡️ Current Weather</div>
               <div style="font-size:13px;color:#1a2820;line-height:1.6;">{weather}</div>
             </td>
           </tr>
-
-          <!-- Spacer -->
           <tr><td colspan="3" style="height:16px;">&nbsp;</td></tr>
-
           <!-- ACTIVE THREATS -->
           <tr>
             <td colspan="3" style="padding:0;">
-              <!-- Section header -->
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td bgcolor="#fff0e6" style="padding:10px 14px;border-radius:8px 8px 0 0;">
-                    <span style="font-size:11px;font-weight:700;color:#c05a00;
-                                 text-transform:uppercase;letter-spacing:1px;">🔴 Active Threats</span>
+                    <span style="font-size:11px;font-weight:700;color:#c05a00;text-transform:uppercase;letter-spacing:1px;">🔴 Active Threats</span>
                   </td>
                 </tr>
-                <!-- Threat rows (each has left-color bar + full-width text) -->
                 {threats_html}
               </table>
             </td>
           </tr>
-
-          <!-- Spacer -->
           <tr><td colspan="3" style="height:16px;">&nbsp;</td></tr>
-
           <!-- IMMEDIATE ACTIONS -->
           <tr>
             <td colspan="3" style="padding:0;">
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td bgcolor="#e8f5ee" style="padding:10px 14px;border-radius:8px 8px 0 0;">
-                    <span style="font-size:11px;font-weight:700;color:#1a3a2a;
-                                 text-transform:uppercase;letter-spacing:1px;">✅ Immediate Actions</span>
+                    <span style="font-size:11px;font-weight:700;color:#1a3a2a;text-transform:uppercase;letter-spacing:1px;">✅ Immediate Actions</span>
                   </td>
                 </tr>
                 {actions_html}
               </table>
             </td>
           </tr>
-
-          <!-- Spacer -->
           <tr><td colspan="3" style="height:16px;">&nbsp;</td></tr>
-
           <!-- IRRIGATION -->
           <tr>
             <td colspan="3" style="padding:0;">
@@ -463,21 +489,17 @@ def send_email(to_email, farmer_name, location, crop, response_text, calendar_ev
                 <tr>
                   <td width="4" bgcolor="#4a8ccc" style="padding:0;line-height:0;">&nbsp;</td>
                   <td bgcolor="#f0f8ff" style="padding:12px 16px;border-radius:0 8px 8px 0;">
-                    <div style="font-size:11px;font-weight:700;color:#1a4a7a;text-transform:uppercase;
-                                letter-spacing:1px;margin-bottom:4px;">💧 Irrigation Advice</div>
+                    <div style="font-size:11px;font-weight:700;color:#1a4a7a;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">💧 Irrigation Advice</div>
                     <div style="font-size:14px;color:#1a2820;line-height:1.7;">{irrigation}</div>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
-
           {calendar_section}
-
         </table>
       </td>
     </tr>
-
     <!-- FOOTER -->
     <tr>
       <td bgcolor="#1a3a2a" style="padding:16px 24px;text-align:center;">
@@ -487,9 +509,7 @@ def send_email(to_email, farmer_name, location, crop, response_text, calendar_ev
         </p>
       </td>
     </tr>
-
   </table>
-
 </td></tr>
 </table>
 </body>
@@ -515,7 +535,8 @@ def extract_email(text):
 def extract_field(text, field):
     patterns = {
         "name":     r"I am ([^,]+),",
-        "location": r"from ([^.]+)\.",
+        "city":     r"farmer from ([^.]+)\.",
+        "location": r"farm is located at: ([^.]+)\.",
         "crop":     r"I grow ([^a]+)",
     }
     match = re.search(patterns.get(field, ""), text)
@@ -550,10 +571,12 @@ def invoke():
                 response_text = item.get("text", "")
                 break
 
-    to_email    = extract_email(prompt_text)
-    farmer_name = extract_field(prompt_text, "name")
-    location    = extract_field(prompt_text, "location")
-    crop        = extract_field(prompt_text, "crop")
+    to_email     = extract_email(prompt_text)
+    farmer_name  = extract_field(prompt_text, "name")
+    city         = extract_field(prompt_text, "city")
+    full_address = extract_field(prompt_text, "location")
+    location     = full_address if full_address != "Unknown" else city
+    crop         = extract_field(prompt_text, "crop")
 
     calendar_events = []
     if os.path.exists("credentials.json"):
