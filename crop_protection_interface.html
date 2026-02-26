@@ -490,7 +490,7 @@
         <!-- Row 2: City + Farm Address -->
         <div class="form-group">
           <label>City / Region </label>
-          <input type="text" id="farmerCity" placeholder="e.g. Fès, Morocco" />
+          <input type="text" id="farmerCity" placeholder="e.g. Casablanca, Morocco" oninput="triggerCityGeo()" />
         </div>
         <div class="form-group">
           <label>Farm Address <span style="color:#8a9e92;font-size:11px;text-transform:none;letter-spacing:0;font-weight:400;">(optional)</span></label>
@@ -682,6 +682,20 @@
           status.textContent = '⚠️ Address not found — city will be used for analysis';
           status.className = 'geo-status failed';
         }
+      }, 900);
+    }
+
+    // Silent background geocoding for city-only case
+    function triggerCityGeo() {
+      const farmAddr = document.getElementById('farmerLocation').value.trim();
+      if (farmAddr) return; // farm address takes priority
+      clearTimeout(geoDebounceTimer);
+      cachedGeo = null;
+      const city = document.getElementById('farmerCity').value.trim();
+      if (!city) return;
+      geoDebounceTimer = setTimeout(async () => {
+        const geo = await geocodeFarm('', city);
+        if (geo) cachedGeo = geo;
       }, 900);
     }
 
@@ -905,22 +919,35 @@
       const stepTimers = initSteps();
 
       try {
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey
-          },
-          body: JSON.stringify({
-            input: [{ type: "text", text: prompt }],
-            session_id: SESSION_ID
-          })
-        });
+        // Auto-retry up to 2 times on 502/503/504 platform errors
+        let response;
+        const MAX_RETRIES = 2;
+        for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+          response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': apiKey
+            },
+            body: JSON.stringify({
+              input: [{ type: "text", text: prompt }],
+              session_id: SESSION_ID
+            })
+          });
+          if (response.ok) break;
+          const isRetryable = [502, 503, 504].includes(response.status);
+          if (!isRetryable || attempt === MAX_RETRIES) break;
+          console.warn(`Attempt ${attempt} failed with ${response.status} — retrying in 3s...`);
+          await new Promise(r => setTimeout(r, 3000));
+        }
 
         clearStepTimers(stepTimers);
 
         if (!response.ok) {
-          throw new Error(`API error: ${response.status} ${response.statusText}`);
+          const friendlyMsg = [502, 503, 504].includes(response.status)
+            ? 'The AI platform is temporarily unavailable. Please try again in a moment.'
+            : `API error: ${response.status} ${response.statusText}`;
+          throw new Error(friendlyMsg);
         }
 
         const data = await response.json();

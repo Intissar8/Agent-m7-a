@@ -2,6 +2,7 @@ import os
 import re
 import smtplib
 import requests
+import threading
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -132,7 +133,7 @@ def smart_schedule(action_text, urgency, now, used_slots):
     day_offset = (candidate.date() - now.date()).days
     hour = candidate.hour
 
-    # Avoid slot collisions
+    # Avoid slot collisions — bump to next free hour
     slot_hour = hour
     bump = 0
     while (day_offset, slot_hour) in used_slots:
@@ -212,8 +213,21 @@ def create_calendar_events(actions, location):
             created.append(label)
             print(f"✅ Calendar event: {label} @ {start.strftime('%Y-%m-%d %H:%M')}")
 
-        # 21-day daily morning monitoring reminder
+        # 21-day daily morning monitoring reminder — skip if one already exists tomorrow
         monitor_start = (now + timedelta(days=1)).replace(hour=8, minute=0, second=0, microsecond=0)
+        tomorrow_min = monitor_start.strftime("%Y-%m-%dT07:00:00Z")
+        tomorrow_max = monitor_start.strftime("%Y-%m-%dT09:00:00Z")
+        existing = service.events().list(
+            calendarId="primary",
+            timeMin=tomorrow_min,
+            timeMax=tomorrow_max,
+            q="Daily Crop Check"
+        ).execute()
+        if existing.get("items"):
+            print("⚠️ Daily monitoring reminder already exists — skipping duplicate")
+            created.append("🌾 Daily Crop Monitoring — already scheduled")
+            return created
+
         monitor_event = {
             "summary": "🌾 Daily Crop Check — Monitor disease, pests & stress",
             "location": location,
@@ -585,15 +599,18 @@ def invoke():
     location     = full_address if full_address != "Unknown" else city
     crop         = extract_field(prompt_text, "crop")
 
-    calendar_events = []
-    if os.path.exists("credentials.json"):
-        actions = extract_actions(response_text)
-        calendar_events = create_calendar_events(actions, location)
-    else:
-        print("⚠️ credentials.json not found — skipping calendar")
+    # Run email and calendar in parallel — don't block the response
+    def run_notifications():
+        calendar_events = []
+        if os.path.exists("credentials.json"):
+            actions = extract_actions(response_text)
+            calendar_events = create_calendar_events(actions, location)
+        else:
+            print("⚠️ credentials.json not found — skipping calendar")
+        if to_email:
+            send_email(to_email, farmer_name, location, crop, response_text, calendar_events)
 
-    if to_email:
-        send_email(to_email, farmer_name, location, crop, response_text, calendar_events)
+    threading.Thread(target=run_notifications, daemon=True).start()
 
     return jsonify(result), 200
 
