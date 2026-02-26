@@ -385,15 +385,22 @@ def send_email(to_email, farmer_name, location, crop, response_text, calendar_ev
         cal_rows = ""
         if calendar_events:
             for e in calendar_events:
-                cal_rows += f'<tr><td style="padding:3px 0;font-size:13px;color:#1a3a2a;line-height:1.6;">• {e}</td></tr>'
+                cal_rows += f'<tr><td style="padding:4px 0;font-size:13px;color:#1a3a2a;line-height:1.6;">• {e}</td></tr>'
             calendar_section = f"""
-      <tr><td style="padding:14px 0 0;">&nbsp;</td></tr>
+      <tr><td colspan="3" style="padding:16px 0 0;">&nbsp;</td></tr>
       <tr>
-        <td style="background:#e8f5ee;border-left:4px solid #2d7a4a;border-radius:0 8px 8px 0;padding:14px 16px;">
-          <div style="font-size:11px;font-weight:700;color:#1a3a2a;text-transform:uppercase;
-                      letter-spacing:1px;margin-bottom:8px;">📅 Calendar Reminders Created</div>
+        <td colspan="3" style="padding:0;">
           <table width="100%" cellpadding="0" cellspacing="0" border="0">
-            {cal_rows}
+            <tr>
+              <td width="4" bgcolor="#2d7a4a" style="padding:0;line-height:0;">&nbsp;</td>
+              <td bgcolor="#e8f5ee" style="padding:14px 18px;border-radius:0 8px 8px 0;">
+                <div style="font-size:11px;font-weight:700;color:#1a3a2a;text-transform:uppercase;
+                            letter-spacing:1px;margin-bottom:10px;">📅 Calendar Reminders Created</div>
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  {cal_rows}
+                </table>
+              </td>
+            </tr>
           </table>
         </td>
       </tr>"""
