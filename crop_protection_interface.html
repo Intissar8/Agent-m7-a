@@ -792,7 +792,19 @@
       }
     }
 
-    function detectNotifications(text) { return ''; }
+    function detectNotifications(text) {
+      return `
+        <div style="display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid rgba(74,140,92,0.15);flex-wrap:wrap;">
+          <div class="notif-pill notif-email">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            Email sent successfully
+          </div>
+          <div class="notif-pill notif-calendar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            Calendar reminders created
+          </div>
+        </div>`;
+    }
 
     // ─── History ──────────────────────────────────────────────────────────
     function addToHistory(crop, location, threatLevel) {
@@ -825,7 +837,7 @@
           if (icon === '🌡️') {
             html += `<div class="weather-bar">${icon} ${escHtml(rest)}</div>`;
           } else if (icon === '📧' || icon === '📅') {
-            html += `<div class="notif-row"><div class="notif-pill ${icon === '📧' ? 'notif-email' : 'notif-calendar'}">${icon} ${escHtml(rest)}</div></div>`;
+            // handled by server — skip agent text
           } else if (icon === '⚠️') {
             const level = rest.replace('THREAT LEVEL:', '').trim();
             const cls   = level.includes('CRITICAL') ? 'tag-critical' : level.includes('HIGH') ? 'tag-high' : level.includes('MEDIUM') ? 'tag-medium' : 'tag-low';
@@ -839,6 +851,8 @@
             </div>`;
           } else if (icon === '💬') {
             html += `<div style="background:#f0f8f2;border-left:3px solid var(--green-light);padding:8px 14px;border-radius:0 6px 6px 0;margin:4px 0 16px;font-size:13px;color:var(--text-mid);font-style:italic;">${escHtml(rest.replace('WHY:','').trim())}</div>`;
+          } else if (icon === '💧') {
+            html += `<div style="background:linear-gradient(135deg,#e8f5ee,#f0f8f2);border:1px solid rgba(74,140,92,0.2);border-radius:var(--radius-sm);padding:12px 16px;margin:4px 0 16px;font-size:14px;color:var(--text-mid);">💧 ${escHtml(rest.replace('IRRIGATION:','').replace('IRRIGATION ADVICE:','').trim())}</div>`;
           } else {
             html += `<div class="section-title">${icon} ${escHtml(rest.replace(':',''))}</div>`;
           }
@@ -919,9 +933,8 @@
         else if (data.content) responseText = data.content;
         else responseText = JSON.stringify(data, null, 2);
 
-        await new Promise(r => setTimeout(r, 800));
         completeAllSteps();
-        await new Promise(r => setTimeout(r, 300));
+        await new Promise(r => setTimeout(r, 150));
 
         const threat = detectThreatLevel(responseText);
         const badge = document.getElementById('threatBadge');

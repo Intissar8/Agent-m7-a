@@ -600,4 +600,4 @@ def invoke():
 
 if __name__ == '__main__':
     print("🌾 Server running on http://localhost:5000")
-    app.run(port=5000, debug=True)
+    app.run(port=5000, debug=False)
